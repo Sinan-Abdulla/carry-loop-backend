@@ -52,7 +52,7 @@ authRouter.post("/login", async (req, res) => {
             });
             res.send(user);
         } else {
-            throw new Error("Invalid credential");
+            throw new Error("Invalid credentials");
         }
 
     } catch (error) {
