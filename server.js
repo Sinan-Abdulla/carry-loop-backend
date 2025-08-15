@@ -16,12 +16,15 @@ app.use(cors());
 
 const userRoute = require("./src/routes/userRoutes");
 const profileRouter = require('./src/routes/profile');
+const productRouter = require('./src/routes/productRoutes');
 
 
 
 
 app.use("/", userRoute);
 app.use("/", profileRouter);
+app.use("/api/products", productRouter);
+
 
 
 const PORT = process.env.PORT || 3000;
