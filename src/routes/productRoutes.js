@@ -222,6 +222,34 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.get("/best-seller", userAuth, admin, async (req, res) => {
+    try {
+        const product = await Product.find().sort({ rating: -1 }).limit(1);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).send("No product found");
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});
+
+router.get("/new-arrivals", userAuth, admin, async (req, res) => {
+    try {
+        const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(6);
+        if (newArrivals) {
+            res.json(newArrivals);
+        } else {
+            res.status(404).send("No product found");
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});
+
 router.get("/:id", userAuth, admin, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
