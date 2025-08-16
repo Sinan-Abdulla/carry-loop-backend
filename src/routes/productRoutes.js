@@ -128,8 +128,98 @@ router.delete("/:id", userAuth, admin, async (req, res) => {
     } catch (error) {
         console.error(error);
     }
-    
-}
-);
+
+});
+
+
+router.get("/", async (req, res) => {
+    try {
+        const {
+            collection,
+            size,
+            color,
+            gender,
+            minPrice,
+            maxPrice,
+            sortBy,
+            search,
+            category,
+            material,
+            brand,
+            limit
+        } = req.query;
+
+        let query = {};
+
+        if (collection && collection.toLowerCase() !== "all") {
+            query.collections = { $regex: new RegExp(collection, "i") };
+        }
+
+        if (category && category.toLowerCase() !== "all") {
+            query.category = { $regex: new RegExp(category, "i") };
+        }
+
+        if (material) {
+            query.material = { $in: material.split(",").map(m => new RegExp(m, "i")) };
+        }
+
+        if (brand) {
+            query.brand = { $in: brand.split(",").map(b => new RegExp(b, "i")) };
+        }
+
+        if (size) {
+            query.sizes = { $in: size.split(",").map(s => new RegExp(s, "i")) };
+        }
+
+        if (color) {
+            query.colors = { $in: color.split(",").map(c => new RegExp(c, "i")) };
+        }
+
+        if (gender) {
+            query.gender = { $regex: new RegExp(gender, "i") };
+        }
+
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = Number(minPrice);
+            if (maxPrice) query.price.$lte = Number(maxPrice);
+        }
+
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        let sort = {};
+        if (sortBy) {
+            switch (sortBy) {
+                case "priceAsc":
+                    sort = { price: 1 };
+                    break;
+                case "priceDesc":
+                    sort = { price: -1 };
+                    break;
+                case "popularity":
+                    sort = { rating: -1 };
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        console.log("MongoDB Query:", query);
+
+        let products = await Product.find(query)
+            .sort(sort)
+            .limit(Number(limit) || 0);
+
+        res.json(products);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});
 
 module.exports = router;
