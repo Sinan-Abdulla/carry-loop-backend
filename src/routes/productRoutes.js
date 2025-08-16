@@ -222,4 +222,43 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.get("/:id", userAuth, admin, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).send("Product Not Found");
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+});
+
+router.get("/similar/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const product = await Product.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        const similarProducts = await Product.find({
+            _id: { $ne: id },
+            gender: product.gender,
+            category: product.category
+        }).limit(4);
+
+        res.json(similarProducts);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+
 module.exports = router;
