@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "Start": "node srver.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "seed": "node seeder.js"
   },
   "keywords": [],
   "author": "",
