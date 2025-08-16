@@ -1,12 +1,12 @@
 const express = require('express');
 const Product = require('../models/Product');
-const { userAuth } = require('../middleware/userAuth');
+const { userAuth,admin } = require('../middleware/userAuth');
 const User = require('../models/User');
 
 const router = express.Router();
 
 
-router.post('/createProduct',userAuth, async (req, res) => {
+router.post('/createProduct',userAuth,admin, async (req, res) => {
     
     try {
 
