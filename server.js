@@ -17,6 +17,7 @@ app.use(cors());
 const userRoute = require("./src/routes/userRoutes");
 const profileRouter = require('./src/routes/profile');
 const productRouter = require('./src/routes/productRoutes');
+const cartRouter = require('./src/routes/cartRoutes');
 
 
 
@@ -24,6 +25,7 @@ const productRouter = require('./src/routes/productRoutes');
 app.use("/", userRoute);
 app.use("/", profileRouter);
 app.use("/api/products", productRouter);
+app.use("/api/cart", cartRouter);
 
 
 
