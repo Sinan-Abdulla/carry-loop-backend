@@ -64,7 +64,7 @@ router.post("/", async (req, res) => {
             return res.status(200).json(cart);
         } else {
             const newCart = await Cart.create({
-                user: userId || undefined,
+                user: userId ? userId : undefined,
                 guestId: guestId || "guest_" + Date.now(),
                 products: [
                     {
@@ -87,5 +87,16 @@ router.post("/", async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 });
+
+router.put("/", async (req, res) => {
+    
+    try {
+        
+    } catch (error) {
+        
+    }
+});
+
+
 
 module.exports = router;
