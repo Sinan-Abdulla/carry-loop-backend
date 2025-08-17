@@ -104,9 +104,11 @@ router.put("/", async (req, res) => {
         );
 
         if (productIndex > -1) {
-            cart.products[productIndex].quantity = quantity;
-        } else {
-            cart.products.splice(productIndex, 1);
+            if (quantity > 0) {
+                cart.products[productIndex].quantity = quantity;
+            } else {
+                cart.products.splice(productIndex, 1); 
+            }
         }
 
         cart.totalPrice = cart.products.reduce(
