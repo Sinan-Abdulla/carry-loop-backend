@@ -1,6 +1,7 @@
 const express = require('express');
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const { userAuth } = require('../middleware/userAuth');
 
 const router = express.Router();
 
@@ -171,6 +172,69 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.post("/merge", userAuth, async (req, res) => {
+
+    const { guestId } = req.body;
+
+    if (!guestId) {
+        return res.status(400).json({ message: "Guest ID is required" });
+    }
+
+    try {
+        // Find guest cart and user cart
+        const guestCart = await Cart.findOne({ guestId });
+        const userCart = await Cart.findOne({ user: req.user._id });
+
+        if (!guestCart || guestCart.products.length === 0) {
+            return res.status(400).json({ message: "Guest cart is empty" });
+        }
+
+        if (userCart) {
+            // Merge guest cart into existing user cart
+            guestCart.products.forEach((guestItem) => {
+                const productIndex = userCart.products.findIndex(
+                    (item) =>
+                        item.productId.toString() === guestItem.productId.toString() &&
+                        item.size === guestItem.size &&
+                        item.color === guestItem.color
+                );
+
+                if (productIndex > -1) {
+                    userCart.products[productIndex].quantity += guestItem.quantity;
+                } else {
+                    userCart.products.push(guestItem);
+                }
+            });
+
+            // Recalculate total price
+            userCart.totalPrice = userCart.products.reduce(
+                (acc, item) => acc + item.price * item.quantity,
+                0
+            );
+
+            await userCart.save();
+
+            // Delete guest cart after merging
+            try {
+                await Cart.findOneAndDelete({ guestId });
+            } catch (deleteError) {
+                console.error("Error deleting guest cart:", deleteError);
+            }
+
+            return res.status(200).json(userCart);
+        } else {
+            // No user cart exists → assign guest cart to user
+            guestCart.user = req.user._id;
+            guestCart.guestId = undefined; // remove guestId
+            await guestCart.save();
+
+            return res.status(200).json(guestCart);
+        }
+    } catch (error) {
+        console.error("Cart merge error:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+});
 
 
 module.exports = router;
