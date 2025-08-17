@@ -89,11 +89,37 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/", async (req, res) => {
-    
+    const { productId, quantity, size, color, guestId, userId } = req.body;
     try {
-        
+        let cart = await getCart(userId, guestId);
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found" });
+        }
+
+        const productIndex = cart.products.findIndex(
+            (p) =>
+                p.productId.toString() === productId &&
+                p.size === size &&
+                p.color === color
+        );
+
+        if (productIndex > -1) {
+            cart.products[productIndex].quantity = quantity;
+        } else {
+            cart.products.splice(productIndex, 1);
+        }
+
+        cart.totalPrice = cart.products.reduce(
+            (acc, p) => acc + p.price * p.quantity,
+            0
+        );
+
+        await cart.save();
+        return res.status(200).json(cart);
+
     } catch (error) {
-        
+        console.error("Cart creation error:", error);
+        res.status(500).json({ message: "Server Error" });
     }
 });
 
