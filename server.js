@@ -18,6 +18,7 @@ const userRoute = require("./src/routes/userRoutes");
 const profileRouter = require('./src/routes/profile');
 const productRouter = require('./src/routes/productRoutes');
 const cartRouter = require('./src/routes/cartRoutes');
+const checkoutRouter = require('./src/routes/chekoutRoutes');
 
 
 
@@ -26,6 +27,7 @@ app.use("/", userRoute);
 app.use("/", profileRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/checkout", checkoutRouter);
 
 
 
