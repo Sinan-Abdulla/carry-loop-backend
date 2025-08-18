@@ -19,6 +19,7 @@ const profileRouter = require('./src/routes/profile');
 const productRouter = require('./src/routes/productRoutes');
 const cartRouter = require('./src/routes/cartRoutes');
 const checkoutRouter = require('./src/routes/chekoutRoutes');
+const orderRouter = require('./src/routes/orderRoutes');
 
 
 
@@ -28,6 +29,7 @@ app.use("/", profileRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/checkout", checkoutRouter);
+app.use("/api/order", orderRouter);
 
 
 
