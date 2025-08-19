@@ -22,6 +22,7 @@ const checkoutRouter = require('./src/routes/chekoutRoutes');
 const orderRouter = require('./src/routes/orderRoutes');
 const uploadRouter = require('./src/routes/uploadRoutes');
 const subscribeRouter = require('./src/routes/subscribeRoutes');
+const adminRouter = require('./src/routes/adminRoute');
 
 
 
@@ -34,6 +35,10 @@ app.use("/api/checkout", checkoutRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/subscribe", subscribeRouter);
+
+//admin
+app.use("/api/admin", adminRouter);
+
 
 
 
