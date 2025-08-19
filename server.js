@@ -20,6 +20,7 @@ const productRouter = require('./src/routes/productRoutes');
 const cartRouter = require('./src/routes/cartRoutes');
 const checkoutRouter = require('./src/routes/chekoutRoutes');
 const orderRouter = require('./src/routes/orderRoutes');
+const uploadRouter = require('./src/routes/uploadRoutes');
 
 
 
@@ -30,6 +31,7 @@ app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/checkout", checkoutRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/upload", uploadRouter);
 
 
 
