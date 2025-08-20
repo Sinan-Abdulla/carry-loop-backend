@@ -24,6 +24,7 @@ const uploadRouter = require('./src/routes/uploadRoutes');
 const subscribeRouter = require('./src/routes/subscribeRoutes');
 const adminRouter = require('./src/routes/adminRoute');
 const productAdminRouter = require('./src/routes/productAdminRoute');
+const adminOrders = require('./src/routes/adminOrdersRoutes');
 
 
 
@@ -40,6 +41,7 @@ app.use("/api/subscribe", subscribeRouter);
 //admin
 app.use("/api/admin", adminRouter);
 app.use("/api/admin", productAdminRouter);
+app.use("/api/admin", adminOrders);
 
 
 
