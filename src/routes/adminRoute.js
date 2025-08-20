@@ -51,4 +51,20 @@ router.put("/update/:id", userAuth, admin, async (req, res) => {
     }
 })
 
+router.delete("/delete/:id", userAuth, admin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (user) {
+            await user.deleteOne();
+            res.json({ message: "user deleted succesfully" });
+        } else {
+            res.status(400).json({ message: "user not found" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: "server error" });
+    }
+
+})
+
 module.exports = router;
