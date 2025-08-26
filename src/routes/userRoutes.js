@@ -37,27 +37,27 @@ authRouter.post("/signUp", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email: email });
-        if (!user) {
-            throw new Error("Invalid credential");
-        }
-        const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            const token = await user.getJWT();
-
-            res.cookie("token", token, {
-                expires: new Date(Date.now() + 900000),
-
-            });
-            res.send(user);
-        } else {
-            throw new Error("Invalid credentials");
-        }
-
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) throw new Error("Invalid credentials");
+  
+      const isPasswordValid = await user.validatePassword(password);
+      if (!isPasswordValid) throw new Error("Invalid credentials");
+  
+      const token = await user.getJWT();
+  
+      // ✅ Set secure, HttpOnly cookie
+      res.cookie("token", token, {
+        httpOnly: true,         // JavaScript can't access this cookie
+        secure: process.env.NODE_ENV === "production", // only HTTPS in prod
+        sameSite: "strict",     // prevent CSRF
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+  
+      res.json({ user,token }); // No need to send token in body if it's in cookie
     } catch (error) {
-        res.status(400).send("error:" + error.message);
+      res.status(400).json({ error: error.message });
     }
-});
-
+  });
+  
 module.exports = authRouter;
