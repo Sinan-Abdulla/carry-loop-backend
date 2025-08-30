@@ -236,7 +236,7 @@ router.get("/best-seller", userAuth, admin, async (req, res) => {
     }
 });
 
-router.get("/new-arrivals", userAuth, admin, async (req, res) => {
+router.get("/new-arrivals", async (req, res) => {
     try {
         const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(6);
         if (newArrivals) {
