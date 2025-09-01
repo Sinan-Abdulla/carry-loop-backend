@@ -5,179 +5,91 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-
+/**
+ * @route   POST /api/products/createProduct
+ * @desc    Create a new product (Admin only)
+ */
 router.post('/createProduct', userAuth, admin, async (req, res) => {
-
     try {
-
-        const { name,
-            description,
-            price,
-            discountPrice,
-            countInStock,
-            category,
-            brand,
-            sizes,
-            colors,
-            collections,
-            material,
-            gender,
-            images,
-            isFeatured,
-            isPublished,
-            tags,
-            dimensions,
-            weight,
-            sku } = req.body;
+        const {
+            name, description, price, discountPrice, countInStock, category, brand,
+            sizes, colors, collections, material, gender, images,
+            isFeatured, isPublished, tags, dimensions, weight, sku
+        } = req.body;
 
         const product = new Product({
-            name,
-            description,
-            price,
-            discountPrice,
-            countInStock,
-            category,
-            brand,
-            sizes,
-            colors,
-            collections,
-            material,
-            gender,
-            images,
-            isFeatured,
-            isPublished,
-            tags,
-            dimensions,
-            weight,
-            sku,
+            name, description, price, discountPrice, countInStock, category, brand,
+            sizes, colors, collections, material, gender, images,
+            isFeatured, isPublished, tags, dimensions, weight, sku,
             user: req.user._id,
         });
 
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);
-
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message, stack: error.stack });
+        res.status(500).json({ message: error.message });
     }
 });
 
+/**
+ * @route   PUT /api/products/:id
+ * @desc    Update product by ID (Admin only)
+ */
 router.put('/:id', userAuth, admin, async (req, res) => {
     try {
-        const { name,
-            description,
-            price,
-            discountPrice,
-            countInStock,
-            category,
-            brand,
-            sizes,
-            colors,
-            collections,
-            material,
-            gender,
-            images,
-            isFeatured,
-            isPublished,
-            tags,
-            dimensions,
-            weight,
-            sku } = req.body;
-
         const product = await Product.findById(req.params.id);
-        if (product) {
-            product.name = name || product.name;
-            product.description = description || product.description;
-            product.price = price || product.price;
-            product.discountPrice = discountPrice || product.discountPrice;
-            product.countInStock = countInStock || product.countInStock;
-            product.category = category || product.category;
-            product.brand = brand || product.brand;
-            product.sizes = sizes || product.sizes;
-            product.colors = colors || product.colors;
-            product.collections = collections || product.collections;
-            product.material = material || product.material;
-            product.gender = gender || product.gender;
-            product.images = images || product.images;
-            product.isFeatured = isFeatured !== undefined ? isFeatured : product.isFeatured;
-            product.isPublished = isPublished !== undefined ? isPublished : product.isPublished;
-            product.tags = tags || product.tags;
-            product.dimensions = dimensions || product.dimensions;
-            product.weight = weight || product.weight;
-            product.sku = sku || product.sku;
-
-            const updatedproduct = await product.save();
-            res.json(updatedproduct);
-        } else {
-            res.status(404).json({ message: 'Product not found' });
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-    } catch {
+
+        Object.assign(product, req.body); // Simple update
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Error updating product' });
     }
 });
 
-router.delete("/:id", userAuth, admin, async (req, res) => {
+/**
+ * @route   DELETE /api/products/:id
+ * @desc    Delete product by ID (Admin only)
+ */
+router.delete('/:id', userAuth, admin, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        if (product) {
-            await product.deleteOne();
-            res.json({ message: 'Product deleted successfully' });
-        } else {
-            res.status(404).json({ message: 'Product not found' });
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
+        await product.deleteOne();
+        res.json({ message: 'Product deleted successfully' });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
-
 });
 
-
-router.get("/", async (req, res) => {
+/**
+ * @route   GET /api/products
+ * @desc    Get all products with filters
+ */
+router.get('/', async (req, res) => {
     try {
         const {
-            collection,
-            size,
-            color,
-            gender,
-            minPrice,
-            maxPrice,
-            sortBy,
-            search,
-            category,
-            material,
-            brand,
-            limit
+            collection, size, color, gender, minPrice, maxPrice,
+            sortBy, search, category, material, brand, limit
         } = req.query;
 
         let query = {};
 
-        if (collection && collection.toLowerCase() !== "all") {
-            query.collections = { $regex: new RegExp(collection, "i") };
-        }
-
-        if (category && category.toLowerCase() !== "all") {
-            query.category = { $regex: new RegExp(category, "i") };
-        }
-
-        if (material) {
-            query.material = { $in: material.split(",").map(m => new RegExp(m, "i")) };
-        }
-
-        if (brand) {
-            query.brand = { $in: brand.split(",").map(b => new RegExp(b, "i")) };
-        }
-
-        if (size) {
-            query.sizes = { $in: size.split(",").map(s => new RegExp(s, "i")) };
-        }
-
-        if (color) {
-            query.colors = { $in: color.split(",").map(c => new RegExp(c, "i")) };
-        }
-
-        if (gender) {
-            query.gender = { $regex: new RegExp(gender, "i") };
-        }
+        if (collection && collection.toLowerCase() !== "all") query.collections = { $regex: new RegExp(collection, "i") };
+        if (category && category.toLowerCase() !== "all") query.category = { $regex: new RegExp(category, "i") };
+        if (material) query.material = { $in: material.split(",").map(m => new RegExp(m, "i")) };
+        if (brand) query.brand = { $in: brand.split(",").map(b => new RegExp(b, "i")) };
+        if (size) query.sizes = { $in: size.split(",").map(s => new RegExp(s, "i")) };
+        if (color) query.colors = { $in: color.split(",").map(c => new RegExp(c, "i")) };
+        if (gender) query.gender = { $regex: new RegExp(gender, "i") };
 
         if (minPrice || maxPrice) {
             query.price = {};
@@ -194,85 +106,56 @@ router.get("/", async (req, res) => {
 
         let sort = {};
         if (sortBy) {
-            switch (sortBy) {
-                case "priceAsc":
-                    sort = { price: 1 };
-                    break;
-                case "priceDesc":
-                    sort = { price: -1 };
-                    break;
-                case "popularity":
-                    sort = { rating: -1 };
-                    break;
-                default:
-                    break;
-            }
+            if (sortBy === "priceAsc") sort = { price: 1 };
+            else if (sortBy === "priceDesc") sort = { price: -1 };
+            else if (sortBy === "popularity") sort = { rating: -1 };
         }
 
-        console.log("MongoDB Query:", query);
-
-        let products = await Product.find(query)
-            .sort(sort)
-            .limit(Number(limit) || 0);
-
+        const products = await Product.find(query).sort(sort).limit(Number(limit) || 0);
         res.json(products);
     } catch (error) {
         console.error(error);
-        res.status(500).send("Server Error");
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
-router.get("/best-seller", userAuth, admin, async (req, res) => {
+/**
+ * @route   GET /api/products/best-seller
+ */
+router.get('/best-seller', async (req, res) => {
     try {
         const product = await Product.find().sort({ rating: -1 }).limit(1);
-        if (product) {
-            res.json(product);
-        } else {
-            res.status(404).send("No product found");
-        }
+        res.json(product || []);
     } catch (error) {
         console.error(error);
-        res.status(500).send("Server Error");
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
-router.get("/new-arrivals", async (req, res) => {
+/**
+ * @route   GET /api/products/new-arrivals
+ */
+router.get('/new-arrivals', async (req, res) => {
     try {
         const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(6);
-        if (newArrivals) {
-            res.json(newArrivals);
-        } else {
-            res.status(404).send("No product found");
-        }
+        res.json(newArrivals || []);
     } catch (error) {
         console.error(error);
-        res.status(500).send("Server Error");
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
-router.get("/:id", userAuth, admin, async (req, res) => {
+/**
+/**
+ * @route   GET /api/products/similar/:id
+ * @desc    Get similar products
+ */
+router.get('/similar/:id', async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
-        if (product) {
-            res.json(product);
-        } else {
-            res.status(404).send("Product Not Found");
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Server Error");
-    }
-});
-
-router.get("/similar/:id", async (req, res) => {
-    const { id } = req.params;
-
-    try {
+        const { id } = req.params;
         const product = await Product.findById(id);
 
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" });
-        }
+        if (!product) return res.status(404).json({ message: 'Product not found' });
 
         const similarProducts = await Product.find({
             _id: { $ne: id },
@@ -281,10 +164,24 @@ router.get("/similar/:id", async (req, res) => {
         }).limit(4);
 
         res.json(similarProducts);
-
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+/**
+ * @route   GET /api/products/:id
+ * @desc    Get single product by ID
+ */
+router.get('/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product Not Found' });
+        res.json(product);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
